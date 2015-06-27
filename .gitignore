@@ -26,3 +26,13 @@
 *.exe
 *.out
 *.app
+
+#python
+*.pyc
+
+#Bragi
+*.bgt
+
+#sublime
+*.sublime-project
+*.sublime-workspace
