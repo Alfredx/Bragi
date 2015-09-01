@@ -150,7 +150,7 @@ class MainUI(wx.Frame):
 		def func_loadterrain(self, param):
 			self.game.LoadTerrain(params[1])
 		def func_line(self, params):
-			self.game.terrain.SetLineZint(int(params[1]),int(params[2]),int(params[3]),int(params[4]),int(params[5]))
+			self.game.terrain.SetLineZ(int(params[1]),int(params[2]),int(params[3]),int(params[4]),int(params[5]))
 		def func_point(self, params):
 			self.game.terrain.SetPointZ(int(params[1]),int(params[2]),int(params[3]))
 		def func_moveto(self, params):
@@ -176,7 +176,7 @@ class MainUI(wx.Frame):
 
 	def CreateGame(self):
 		self.game = MyGame.AIGame((self.gridColumns, self.gridRows))
-		self.game.LoadTerrain('tt.bgt')
+		# self.game.LoadTerrain('../game/assets/tt.bgt')
 		self.game.AddPlayer(6,9)
 		self.game.AddNPC(22,18)
 		self.GameStart()

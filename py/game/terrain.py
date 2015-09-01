@@ -1,11 +1,16 @@
 #encoding: utf-8
+import sys
 import cPickle
 import pprint
+sys.path.append('..')
+import Bragi_AStar as BgAStar
+
 
 BLOCK_HEIGHT = 20
 
-class terrain_pt():
-	def __init__(self, x=0.0, y=0.0, z=0.0):
+class terrain_pt(BgAStar.BgAStarNode):
+	def __init__(self, bgmap, x=0.0, y=0.0, z=0.0):
+		BgAStar.BgAStarNode.__init__(self, bgmap)
 		self.x = x
 		self.y = y
 		self.z = z
@@ -13,10 +18,17 @@ class terrain_pt():
 	def __str__(self):
 		return '(%.2f,%.2f,%.2f)'%(self.x,self.y,self.z)
 
-class terrain():
+	def GetCoord(self):
+		return (self.x, self.y)
+	def GetCost(self, neighbor):
+		return self.__DefaultGetCost(neighbor)
+
+class terrain(BgAStar.BgAStarMap):
 	def __init__(self, size):
+		BgAStar.BgAStarMap.__init__(self)
 		self.size = size
-		self.data = [[ terrain_pt(i,j,0) for j in range(size[1])] for i in range(size[0])]
+		self.data = None
+		self.Build()
 	def __str__(self):
 		printStr = ''
 		for j in range(self.size[1]):
@@ -25,17 +37,36 @@ class terrain():
 				printStr += ' '
 			printStr += '\n'
 		return printStr
+	def ConstructNodes(self, data = None):
+		self.data = [[ terrain_pt(self,i,j,0) for j in range(self.size[1])] for i in range(self.size[0])]
+		self.bgNodes = self.data
+		return
+	def ConstructNeighbors(self):
+		for j in range(self.size[1]):
+			for i in range(self.size[0]):
+				if self.data[i][j].z >= BLOCK_HEIGHT:
+					continue
+				if j != self.size[1] - 1 and self.data[i][j+1].z < BLOCK_HEIGHT:
+					self.data[i][j].neighbors.append(self.data[i][j+1])
+				if j != 0 and self.data[i][j-1].z < BLOCK_HEIGHT:
+					self.data[i][j].neighbors.append(self.data[i][j-1])
+				if i != 0 and self.data[i-1][j].z < BLOCK_HEIGHT:
+					self.data[i][j].neighbors.append(self.data[i-1][j])
+				if i != self.size[0] - 1 and self.data[i+1][j].z < BLOCK_HEIGHT:
+					self.data[i][j].neighbors.append(self.data[i+1][j])
+
+		return
 	def GetSize(self):
 		return self.size
 	def ExpandSize(self, size):
 		if size[1] > self.size[1]:
 			for i in range(self.size[0]):
 				for j in range(size[1] - self.size[1]):
-					self.data[i].append(terrain_pt(i,self.size[1]+j,0))
+					self.data[i].append(terrain_pt(self,i,self.size[1]+j,0))
 			self.size = (self.size[0],size[1])
 		if size[0] > self.size[0]:
 			for i in range(size[0] - self.size[0]):
-				self.data.append([ terrain_pt(self.size[0]+i,j,0) for j in range(self.size[1])])
+				self.data.append([ terrain_pt(self,self.size[0]+i,j,0) for j in range(self.size[1])])
 			self.size = (size[0], self.size[1])
 	def CheckPointInTerrainSize(self, x, y):
 		if x >= self.size[0] or x < 0:
